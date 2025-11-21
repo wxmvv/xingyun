@@ -72,6 +72,17 @@ public class PayTypeServiceImpl extends BaseMpServiceImpl<PayTypeMapper, PayType
     return getBaseMapper().selectById(id);
   }
 
+  @OpLog(type = BaseDataOpLogType.class, name = "删除支付方式，ID：{}", params = {"#id"})
+  @Transactional(rollbackFor = Exception.class)
+  @Override
+  public void deleteById(String id) {
+
+    Wrapper<PayType> updateWrapper = Wrappers.lambdaUpdate(PayType.class)
+        .set(PayType::getAvailable, Boolean.FALSE)
+        .eq(PayType::getId, id);
+    getBaseMapper().update(updateWrapper);
+  }
+
   @OpLog(type = BaseDataOpLogType.class, name = "新增支付方式，ID：{}, 编号：{}", params = {"#id",
       "#code"})
   @Transactional(rollbackFor = Exception.class)
@@ -79,13 +90,15 @@ public class PayTypeServiceImpl extends BaseMpServiceImpl<PayTypeMapper, PayType
   public String create(CreatePayTypeVo vo) {
 
     Wrapper<PayType> checkCodeWrapper = Wrappers.lambdaQuery(PayType.class)
-        .eq(PayType::getCode, vo.getCode());
+        .eq(PayType::getCode, vo.getCode())
+        .eq(PayType::getAvailable, Boolean.TRUE);
     if (getBaseMapper().selectCount(checkCodeWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
 
     Wrapper<PayType> checkNameWrapper = Wrappers.lambdaQuery(PayType.class)
-        .eq(PayType::getName, vo.getName());
+        .eq(PayType::getName, vo.getName())
+        .eq(PayType::getAvailable, Boolean.TRUE);
     if (getBaseMapper().selectCount(checkNameWrapper) > 0) {
       throw new DefaultClientException("名称重复，请重新输入！");
     }
@@ -120,20 +133,24 @@ public class PayTypeServiceImpl extends BaseMpServiceImpl<PayTypeMapper, PayType
     }
 
     Wrapper<PayType> checkWrapper = Wrappers.lambdaQuery(PayType.class)
-        .eq(PayType::getCode, vo.getCode()).ne(PayType::getId, vo.getId());
+        .eq(PayType::getCode, vo.getCode())
+        .eq(PayType::getAvailable, Boolean.TRUE)
+        .ne(PayType::getId, vo.getId());
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
 
     Wrapper<PayType> checkNameWrapper = Wrappers.lambdaQuery(PayType.class)
-        .eq(PayType::getName, vo.getName()).ne(PayType::getId, vo.getId());
+        .eq(PayType::getName, vo.getName())
+        .eq(PayType::getAvailable, Boolean.TRUE)
+        .ne(PayType::getId, vo.getId());
     if (getBaseMapper().selectCount(checkNameWrapper) > 0) {
       throw new DefaultClientException("名称重复，请重新输入！");
     }
 
     LambdaUpdateWrapper<PayType> updateWrapper = Wrappers.lambdaUpdate(PayType.class)
         .set(PayType::getCode, vo.getCode()).set(PayType::getName, vo.getName())
-        .set(PayType::getAvailable, vo.getAvailable()).set(PayType::getDescription,
+        .set(PayType::getDescription,
             StringUtil.isBlank(vo.getDescription()) ? StringPool.EMPTY_STR : vo.getDescription())
         .set(PayType::getRecText, vo.getRecText())
         .eq(PayType::getId, vo.getId());

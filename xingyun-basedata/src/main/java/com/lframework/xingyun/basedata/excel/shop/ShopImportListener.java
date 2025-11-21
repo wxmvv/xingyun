@@ -41,7 +41,7 @@ public class ShopImportListener extends ExcelImportListener<ShopImportModel> {
     }
     checkList.add(data.getCode());
     Wrapper<Shop> checkWrapper = Wrappers.lambdaQuery(Shop.class)
-        .eq(Shop::getCode, data.getCode());
+        .eq(Shop::getCode, data.getCode()).eq(Shop::getAvailable, Boolean.TRUE);
     ShopService shopService = ApplicationUtil.getBean(ShopService.class);
     if (shopService.count(checkWrapper) > 0) {
       throw new DefaultClientException(

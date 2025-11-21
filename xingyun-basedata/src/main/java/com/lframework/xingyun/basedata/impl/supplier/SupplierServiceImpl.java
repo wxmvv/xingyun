@@ -69,23 +69,14 @@ public class SupplierServiceImpl extends BaseMpServiceImpl<SupplierMapper, Suppl
     return getBaseMapper().selectById(id);
   }
 
-  @OpLog(type = BaseDataOpLogType.class, name = "停用供应商，ID：{}", params = "#id")
+  @OpLog(type = BaseDataOpLogType.class, name = "删除供应商，ID：{}", params = "#id")
   @Transactional(rollbackFor = Exception.class)
   @Override
-  public void unable(String id) {
+  public void deleteById(String id) {
 
     Wrapper<Supplier> updateWrapper = Wrappers.lambdaUpdate(Supplier.class)
-        .set(Supplier::getAvailable, Boolean.FALSE).eq(Supplier::getId, id);
-    getBaseMapper().update(updateWrapper);
-  }
-
-  @OpLog(type = BaseDataOpLogType.class, name = "启用供应商，ID：{}", params = "#id")
-  @Transactional(rollbackFor = Exception.class)
-  @Override
-  public void enable(String id) {
-
-    Wrapper<Supplier> updateWrapper = Wrappers.lambdaUpdate(Supplier.class)
-        .set(Supplier::getAvailable, Boolean.TRUE).eq(Supplier::getId, id);
+        .set(Supplier::getAvailable, Boolean.FALSE)
+        .eq(Supplier::getId, id);
     getBaseMapper().update(updateWrapper);
   }
 
@@ -96,7 +87,8 @@ public class SupplierServiceImpl extends BaseMpServiceImpl<SupplierMapper, Suppl
   public String create(CreateSupplierVo vo) {
 
     Wrapper<Supplier> checkWrapper = Wrappers.lambdaQuery(Supplier.class)
-        .eq(Supplier::getCode, vo.getCode());
+        .eq(Supplier::getCode, vo.getCode())
+        .eq(Supplier::getAvailable, Boolean.TRUE);
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
@@ -180,6 +172,7 @@ public class SupplierServiceImpl extends BaseMpServiceImpl<SupplierMapper, Suppl
 
     Wrapper<Supplier> checkWrapper = Wrappers.lambdaQuery(Supplier.class)
         .eq(Supplier::getCode, vo.getCode())
+        .eq(Supplier::getAvailable, Boolean.TRUE)
         .ne(Supplier::getId, vo.getId());
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
@@ -206,7 +199,7 @@ public class SupplierServiceImpl extends BaseMpServiceImpl<SupplierMapper, Suppl
             !StringUtil.isBlank(vo.getAccountName()) ? vo.getAccountName() : null)
         .set(Supplier::getAccountNo,
             !StringUtil.isBlank(vo.getAccountNo()) ? vo.getAccountNo() : null)
-        .set(Supplier::getAvailable, vo.getAvailable()).set(Supplier::getDescription,
+        .set(Supplier::getDescription,
             StringUtil.isBlank(vo.getDescription()) ? StringPool.EMPTY_STR : vo.getDescription())
         .eq(Supplier::getId, vo.getId());
 

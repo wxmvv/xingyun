@@ -82,23 +82,14 @@ public class CustomerServiceImpl extends BaseMpServiceImpl<CustomerMapper, Custo
     return PageResultUtil.convert(new PageInfo<>(datas));
   }
 
-  @OpLog(type = BaseDataOpLogType.class, name = "停用客户，ID：{}", params = "#id")
+  @OpLog(type = BaseDataOpLogType.class, name = "删除客户，ID：{}", params = "#id")
   @Transactional(rollbackFor = Exception.class)
   @Override
-  public void unable(String id) {
+  public void deleteById(String id) {
 
     Wrapper<Customer> updateWrapper = Wrappers.lambdaUpdate(Customer.class)
-        .set(Customer::getAvailable, Boolean.FALSE).eq(Customer::getId, id);
-    getBaseMapper().update(updateWrapper);
-  }
-
-  @OpLog(type = BaseDataOpLogType.class, name = "启用客户，ID：{}", params = "#id")
-  @Transactional(rollbackFor = Exception.class)
-  @Override
-  public void enable(String id) {
-
-    Wrapper<Customer> updateWrapper = Wrappers.lambdaUpdate(Customer.class)
-        .set(Customer::getAvailable, Boolean.TRUE).eq(Customer::getId, id);
+        .set(Customer::getAvailable, Boolean.FALSE)
+        .eq(Customer::getId, id);
     getBaseMapper().update(updateWrapper);
   }
 
@@ -109,7 +100,8 @@ public class CustomerServiceImpl extends BaseMpServiceImpl<CustomerMapper, Custo
   public String create(CreateCustomerVo vo) {
 
     Wrapper<Customer> checkWrapper = Wrappers.lambdaQuery(Customer.class)
-        .eq(Customer::getCode, vo.getCode());
+        .eq(Customer::getCode, vo.getCode())
+        .eq(Customer::getAvailable, Boolean.TRUE);
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
@@ -187,6 +179,7 @@ public class CustomerServiceImpl extends BaseMpServiceImpl<CustomerMapper, Custo
 
     Wrapper<Customer> checkWrapper = Wrappers.lambdaQuery(Customer.class)
         .eq(Customer::getCode, vo.getCode())
+        .eq(Customer::getAvailable, Boolean.TRUE)
         .ne(Customer::getId, vo.getId());
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
@@ -212,7 +205,7 @@ public class CustomerServiceImpl extends BaseMpServiceImpl<CustomerMapper, Custo
             !StringUtil.isBlank(vo.getAccountName()) ? vo.getAccountName() : null)
         .set(Customer::getAccountNo,
             !StringUtil.isBlank(vo.getAccountNo()) ? vo.getAccountNo() : null)
-        .set(Customer::getAvailable, vo.getAvailable()).set(Customer::getDescription,
+        .set(Customer::getDescription,
             StringUtil.isBlank(vo.getDescription()) ? StringPool.EMPTY_STR : vo.getDescription())
         .eq(Customer::getId, vo.getId());
 

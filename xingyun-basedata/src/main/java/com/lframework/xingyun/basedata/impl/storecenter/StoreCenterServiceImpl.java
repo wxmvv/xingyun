@@ -61,23 +61,14 @@ public class StoreCenterServiceImpl extends BaseMpServiceImpl<StoreCenterMapper,
     return getBaseMapper().selectById(id);
   }
 
-  @OpLog(type = BaseDataOpLogType.class, name = "停用仓库，ID：{}", params = "#id")
+  @OpLog(type = BaseDataOpLogType.class, name = "删除仓库，ID：{}", params = "#id")
   @Transactional(rollbackFor = Exception.class)
   @Override
-  public void unable(String id) {
+  public void deleteById(String id) {
 
     Wrapper<StoreCenter> updateWrapper = Wrappers.lambdaUpdate(StoreCenter.class)
-        .set(StoreCenter::getAvailable, Boolean.FALSE).eq(StoreCenter::getId, id);
-    getBaseMapper().update(updateWrapper);
-  }
-
-  @OpLog(type = BaseDataOpLogType.class, name = "启用仓库，ID：{}", params = "#id")
-  @Transactional(rollbackFor = Exception.class)
-  @Override
-  public void enable(String id) {
-
-    Wrapper<StoreCenter> updateWrapper = Wrappers.lambdaUpdate(StoreCenter.class)
-        .set(StoreCenter::getAvailable, Boolean.TRUE).eq(StoreCenter::getId, id);
+        .set(StoreCenter::getAvailable, Boolean.FALSE)
+        .eq(StoreCenter::getId, id);
     getBaseMapper().update(updateWrapper);
   }
 
@@ -88,7 +79,8 @@ public class StoreCenterServiceImpl extends BaseMpServiceImpl<StoreCenterMapper,
   public String create(CreateStoreCenterVo vo) {
 
     Wrapper<StoreCenter> checkWrapper = Wrappers.lambdaQuery(StoreCenter.class)
-        .eq(StoreCenter::getCode, vo.getCode());
+        .eq(StoreCenter::getCode, vo.getCode())
+        .eq(StoreCenter::getAvailable, Boolean.TRUE);
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
@@ -146,7 +138,9 @@ public class StoreCenterServiceImpl extends BaseMpServiceImpl<StoreCenterMapper,
     }
 
     Wrapper<StoreCenter> checkWrapper = Wrappers.lambdaQuery(StoreCenter.class)
-        .eq(StoreCenter::getCode, vo.getCode()).ne(StoreCenter::getId, vo.getId());
+        .eq(StoreCenter::getCode, vo.getCode())
+        .eq(StoreCenter::getAvailable, Boolean.TRUE)
+        .ne(StoreCenter::getId, vo.getId());
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
@@ -156,7 +150,6 @@ public class StoreCenterServiceImpl extends BaseMpServiceImpl<StoreCenterMapper,
         .set(StoreCenter::getContact, !StringUtil.isBlank(vo.getContact()) ? vo.getContact() : null)
         .set(StoreCenter::getTelephone,
             !StringUtil.isBlank(vo.getTelephone()) ? vo.getTelephone() : null)
-        .set(StoreCenter::getAvailable, vo.getAvailable())
         .set(StoreCenter::getAddress, !StringUtil.isBlank(vo.getAddress()) ? vo.getAddress() : null)
         .set(StoreCenter::getDescription,
             StringUtil.isBlank(vo.getDescription()) ? StringPool.EMPTY_STR : vo.getDescription())
