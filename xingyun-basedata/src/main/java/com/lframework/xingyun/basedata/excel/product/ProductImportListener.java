@@ -207,6 +207,18 @@ public class ProductImportListener extends ExcelImportListener<ProductImportMode
       }
       record.setExternalCode(data.getExternalCode());
       record.setCategoryId(data.getCategoryId());
+
+      // 判断分类是否是末级分类
+      ProductCategoryService productCategoryService = ApplicationUtil.getBean(
+          ProductCategoryService.class);
+      ProductCategory productCategory = productCategoryService.findById(data.getCategoryId());
+      Wrapper<ProductCategory> checkCategoryWrapper = Wrappers.lambdaQuery(
+              ProductCategory.class).eq(ProductCategory::getParentId, productCategory.getId())
+          .eq(ProductCategory::getAvailable, Boolean.TRUE);
+      if (productCategoryService.count(checkCategoryWrapper) > 0) {
+        throw new DefaultClientException(
+            "第" + (i + 1) + "行“商品分类”不是末级分类，请使用末级分类");
+      }
       record.setBrandId(data.getBrandId());
       record.setTaxRate(data.getTaxRate() == null ? BigDecimal.ZERO : data.getTaxRate());
       record.setSaleTaxRate(

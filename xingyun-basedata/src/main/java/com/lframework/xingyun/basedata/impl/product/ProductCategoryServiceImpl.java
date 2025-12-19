@@ -13,12 +13,14 @@ import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
 import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.inner.service.RecursionMappingService;
+import com.lframework.xingyun.basedata.entity.Product;
 import com.lframework.xingyun.basedata.entity.ProductCategory;
 import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
 import com.lframework.xingyun.basedata.enums.ProductCategoryNodeType;
 import com.lframework.xingyun.basedata.events.DeleteProductCategoryEvent;
 import com.lframework.xingyun.basedata.mappers.ProductCategoryMapper;
 import com.lframework.xingyun.basedata.service.product.ProductCategoryService;
+import com.lframework.xingyun.basedata.service.product.ProductService;
 import com.lframework.xingyun.basedata.vo.product.category.CreateProductCategoryVo;
 import com.lframework.xingyun.basedata.vo.product.category.QueryProductCategorySelectorVo;
 import com.lframework.xingyun.basedata.vo.product.category.UpdateProductCategoryVo;
@@ -39,6 +41,9 @@ public class ProductCategoryServiceImpl extends
 
   @Autowired
   private RecursionMappingService recursionMappingService;
+
+  @Autowired
+  private ProductService productService;
 
   @Override
   public List<ProductCategory> getAllProductCategories() {
@@ -110,6 +115,14 @@ public class ProductCategoryServiceImpl extends
           .eq(ProductCategory::getAvailable, Boolean.TRUE);
       if (getBaseMapper().selectCount(checkParentWrapper) == 0) {
         throw new DefaultClientException("上级分类不存在，请检查！");
+      }
+
+      // 然后判断上级分类下是否有商品，如果有商品不允许新增子分类
+      Wrapper<Product> checkProductWrapper = Wrappers.lambdaQuery(Product.class)
+          .eq(Product::getCategoryId, vo.getParentId())
+          .eq(Product::getAvailable, Boolean.TRUE);
+      if (productService.count(checkProductWrapper) > 0) {
+        throw new DefaultClientException("上级分类已关联商品，不允许新增子分类！");
       }
     }
 

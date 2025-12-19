@@ -14,6 +14,7 @@ import com.lframework.starter.web.core.annotations.oplog.OpLog;
 import com.lframework.starter.web.core.components.resp.PageResult;
 import com.lframework.starter.web.core.event.DataChangeEventBuilder;
 import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.utils.ApplicationUtil;
 import com.lframework.starter.web.core.utils.EnumUtil;
 import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.starter.web.core.utils.JsonUtil;
@@ -23,6 +24,7 @@ import com.lframework.starter.web.core.utils.PageResultUtil;
 import com.lframework.starter.web.inner.service.RecursionMappingService;
 import com.lframework.xingyun.basedata.entity.Product;
 import com.lframework.xingyun.basedata.entity.ProductBundle;
+import com.lframework.xingyun.basedata.entity.ProductCategory;
 import com.lframework.xingyun.basedata.entity.ProductProperty;
 import com.lframework.xingyun.basedata.entity.ProductPropertyItem;
 import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
@@ -32,6 +34,7 @@ import com.lframework.xingyun.basedata.enums.ProductType;
 import com.lframework.xingyun.basedata.events.DeleteProductEvent;
 import com.lframework.xingyun.basedata.mappers.ProductMapper;
 import com.lframework.xingyun.basedata.service.product.ProductBundleService;
+import com.lframework.xingyun.basedata.service.product.ProductCategoryService;
 import com.lframework.xingyun.basedata.service.product.ProductPropertyItemService;
 import com.lframework.xingyun.basedata.service.product.ProductPropertyRelationService;
 import com.lframework.xingyun.basedata.service.product.ProductPropertyService;
@@ -89,6 +92,9 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
 
   @Autowired
   private ProductBundleService productBundleService;
+
+  @Autowired
+  private ProductCategoryService productCategoryService;
 
   @Override
   public PageResult<Product> query(Integer pageIndex, Integer pageSize, QueryProductVo vo) {
@@ -198,6 +204,15 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
       data.setBrandId(vo.getBrandId());
     }
     data.setCategoryId(vo.getCategoryId());
+
+    ProductCategory productCategory = productCategoryService.findById(data.getCategoryId());
+    Wrapper<ProductCategory> checkCategoryWrapper = Wrappers.lambdaQuery(
+            ProductCategory.class).eq(ProductCategory::getParentId, productCategory.getId())
+        .eq(ProductCategory::getAvailable, Boolean.TRUE);
+    if (productCategoryService.count(checkCategoryWrapper) > 0) {
+      throw new DefaultClientException(
+          "“商品分类”不是末级分类，请选择末级分类");
+    }
 
     if (StringUtil.isNotBlank(vo.getSpec())) {
       data.setSpec(vo.getSpec());
@@ -375,6 +390,15 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
       if (getBaseMapper().selectCount(checkWrapper) > 0) {
         throw new DefaultClientException("商品SKU编号重复，请重新输入！");
       }
+    }
+
+    ProductCategory productCategory = productCategoryService.findById(vo.getCategoryId());
+    Wrapper<ProductCategory> checkCategoryWrapper = Wrappers.lambdaQuery(
+            ProductCategory.class).eq(ProductCategory::getParentId, productCategory.getId())
+        .eq(ProductCategory::getAvailable, Boolean.TRUE);
+    if (productCategoryService.count(checkCategoryWrapper) > 0) {
+      throw new DefaultClientException(
+          "“商品分类”不是末级分类，请选择末级分类");
     }
 
     LambdaUpdateWrapper<Product> updateWrapper = Wrappers.lambdaUpdate(Product.class)
