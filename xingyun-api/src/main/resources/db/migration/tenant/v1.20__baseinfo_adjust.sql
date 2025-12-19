@@ -53,3 +53,46 @@ ALTER TABLE `base_data_pay_type`
 DROP INDEX `code`,
 ADD INDEX `code`(`code`) USING BTREE;
 INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('2000009005', '2000009005', '', '删除地址', NULL, 0, '', NULL, '2000009', '15', '', 0, 2, 0, 'base-data:address:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 23:23:33', '系统管理员', '1', '2021-07-04 00:34:23');
+ALTER TABLE `base_data_logistics_company`
+DROP INDEX `code`,
+ADD INDEX `code`(`code`) USING BTREE;
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('2000010003', '2000010003', '', '删除物流公司', NULL, 0, '', NULL, '2000010', '15', '', 0, 2, 0, 'base-data:logistics-company:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 23:23:33', '系统管理员', '1', '2021-07-04 00:34:23');
+ALTER TABLE `base_data_product_category`
+DROP INDEX `code`,
+ADD INDEX `code`(`code`) USING BTREE,
+ADD INDEX `name`(`name`) USING BTREE;
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('2001001004', '2001001004', '', '删除分类', NULL, 0, '', NULL, '2001001', '4', '', 0, 2, 0, 'base-data:product:category:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 23:23:33', '系统管理员', '1', '2021-07-04 00:34:23');
+ALTER TABLE `base_data_product_brand`
+DROP INDEX `code`,
+ADD INDEX `code`(`code`) USING BTREE,
+ADD INDEX `name`(`name`) USING BTREE;
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('2001002004', '2001002004', '', '删除品牌', NULL, 0, '', NULL, '2001002', '4', '', 0, 2, 0, 'base-data:product:brand:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 23:23:33', '系统管理员', '1', '2021-07-04 00:34:23');
+ALTER TABLE `base_data_product_property`
+    ADD INDEX `code`(`code`) USING BTREE,
+ADD INDEX `name`(`name`) USING BTREE;
+ALTER TABLE `base_data_product_property_item`
+DROP INDEX `property_id`,
+ADD INDEX `property_id`(`property_id`, `code`) USING BTREE,
+ADD INDEX `property_id2`(`name`, `property_id`) USING BTREE;
+
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('2001004006', '2001004006', '', '删除属性', NULL, 0, '', NULL, '2001004', '4', '', 0, 2, 0, 'base-data:product:property:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 23:23:33', '系统管理员', '1', '2021-07-04 00:34:23');
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('2001004007', '2001004007', '', '删除属性值', NULL, 0, '', NULL, '2001004', '4', '', 0, 2, 0, 'base-data:product:property-item:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 23:23:33', '系统管理员', '1', '2021-07-04 00:34:23');
+ALTER TABLE `base_data_product`
+DROP INDEX `code`,
+DROP INDEX `sku_code`,
+ADD INDEX `code`(`code`) USING BTREE,
+ADD INDEX `sku_code`(`sku_code`) USING BTREE;
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('2001005004', '2001005004', '', '删除商品', NULL, 0, '', NULL, '2001005', '4', '', 0, 2, 0, 'base-data:product:info:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 23:23:33', '系统管理员', '1', '2021-07-04 00:34:23');
+ALTER TABLE `tbl_stock_adjust_reason`
+DROP INDEX `code`,
+ADD INDEX `code`(`code`) USING BTREE;
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('3000005002003', '3000005002003', '', '删除库存调整原因', NULL, 0, '', NULL, '3000005002', '10', '', 0, 2, 0, 'stock:adjust:reason:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 22:50:27', '系统管理员', '1', '2021-07-04 00:34:23');
+ALTER TABLE `settle_in_item`
+DROP INDEX `code`,
+ADD INDEX `code`(`code`) USING BTREE;
+ALTER TABLE `settle_out_item`
+DROP INDEX `code`,
+ADD INDEX `code`(`code`) USING BTREE;
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('4000001004', '4000001004', '', '删除收入项目', NULL, 0, '', NULL, '4000001', '11', '', 0, 2, 0, 'settle:in-item:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 10:53:45', '系统管理员', '1', '2021-07-04 00:34:23');
+INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('4000002004', '4000002004', '', '删除支出项目', NULL, 0, '', NULL, '4000002', '11', '', 0, 2, 0, 'settle:out-item:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 10:53:45', '系统管理员', '1', '2021-07-04 00:34:23');
+

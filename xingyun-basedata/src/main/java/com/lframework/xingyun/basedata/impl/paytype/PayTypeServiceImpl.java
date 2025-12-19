@@ -10,14 +10,16 @@ import com.lframework.starter.common.utils.Assert;
 import com.lframework.starter.common.utils.ObjectUtil;
 import com.lframework.starter.common.utils.StringUtil;
 import com.lframework.starter.web.core.annotations.oplog.OpLog;
-import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
-import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
 import com.lframework.starter.web.core.components.resp.PageResult;
+import com.lframework.starter.web.core.event.DataChangeEventBuilder;
+import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.core.utils.PageHelperUtil;
 import com.lframework.starter.web.core.utils.PageResultUtil;
-import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.xingyun.basedata.entity.PayType;
+import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
+import com.lframework.xingyun.basedata.events.DeletePayTypeEvent;
 import com.lframework.xingyun.basedata.mappers.PayTypeMapper;
 import com.lframework.xingyun.basedata.service.paytype.PayTypeService;
 import com.lframework.xingyun.basedata.vo.paytype.CreatePayTypeVo;
@@ -81,6 +83,10 @@ public class PayTypeServiceImpl extends BaseMpServiceImpl<PayTypeMapper, PayType
         .set(PayType::getAvailable, Boolean.FALSE)
         .eq(PayType::getId, id);
     getBaseMapper().update(updateWrapper);
+
+    PayType record = this.findById(id);
+
+    DataChangeEventBuilder.publishLogicDelete(this, DeletePayTypeEvent.class, record);
   }
 
   @OpLog(type = BaseDataOpLogType.class, name = "新增支付方式，ID：{}, 编号：{}", params = {"#id",

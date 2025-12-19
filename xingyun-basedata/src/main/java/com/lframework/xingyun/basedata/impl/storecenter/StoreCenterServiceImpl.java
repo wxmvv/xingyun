@@ -10,23 +10,25 @@ import com.lframework.starter.common.exceptions.impl.InputErrorException;
 import com.lframework.starter.common.utils.Assert;
 import com.lframework.starter.common.utils.ObjectUtil;
 import com.lframework.starter.common.utils.StringUtil;
-import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.annotations.oplog.OpLog;
 import com.lframework.starter.web.core.components.resp.PageResult;
+import com.lframework.starter.web.core.event.DataChangeEventBuilder;
+import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
 import com.lframework.starter.web.core.utils.IdUtil;
+import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.core.utils.PageHelperUtil;
 import com.lframework.starter.web.core.utils.PageResultUtil;
+import com.lframework.starter.web.inner.dto.dic.city.DicCityDto;
+import com.lframework.starter.web.inner.service.DicCityService;
 import com.lframework.xingyun.basedata.entity.StoreCenter;
 import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
+import com.lframework.xingyun.basedata.events.DeleteStoreCenterEvent;
 import com.lframework.xingyun.basedata.mappers.StoreCenterMapper;
 import com.lframework.xingyun.basedata.service.storecenter.StoreCenterService;
 import com.lframework.xingyun.basedata.vo.storecenter.CreateStoreCenterVo;
 import com.lframework.xingyun.basedata.vo.storecenter.QueryStoreCenterSelectorVo;
 import com.lframework.xingyun.basedata.vo.storecenter.QueryStoreCenterVo;
 import com.lframework.xingyun.basedata.vo.storecenter.UpdateStoreCenterVo;
-import com.lframework.starter.web.core.annotations.oplog.OpLog;
-import com.lframework.starter.web.inner.dto.dic.city.DicCityDto;
-import com.lframework.starter.web.inner.service.DicCityService;
-import com.lframework.starter.web.core.utils.OpLogUtil;
 import java.io.Serializable;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +72,10 @@ public class StoreCenterServiceImpl extends BaseMpServiceImpl<StoreCenterMapper,
         .set(StoreCenter::getAvailable, Boolean.FALSE)
         .eq(StoreCenter::getId, id);
     getBaseMapper().update(updateWrapper);
+
+    StoreCenter record = this.findById(id);
+
+    DataChangeEventBuilder.publishLogicDelete(this, DeleteStoreCenterEvent.class, record);
   }
 
   @OpLog(type = BaseDataOpLogType.class, name = "新增仓库，ID：{}, 编号：{}", params = {"#id",

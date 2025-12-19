@@ -10,13 +10,17 @@ import com.lframework.starter.common.utils.CollectionUtil;
 import com.lframework.starter.common.utils.NumberUtil;
 import com.lframework.starter.common.utils.ObjectUtil;
 import com.lframework.starter.common.utils.StringUtil;
-import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.annotations.oplog.OpLog;
 import com.lframework.starter.web.core.components.resp.PageResult;
+import com.lframework.starter.web.core.event.DataChangeEventBuilder;
+import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
 import com.lframework.starter.web.core.utils.EnumUtil;
 import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.starter.web.core.utils.JsonUtil;
+import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.core.utils.PageHelperUtil;
 import com.lframework.starter.web.core.utils.PageResultUtil;
+import com.lframework.starter.web.inner.service.RecursionMappingService;
 import com.lframework.xingyun.basedata.entity.Product;
 import com.lframework.xingyun.basedata.entity.ProductBundle;
 import com.lframework.xingyun.basedata.entity.ProductProperty;
@@ -25,6 +29,7 @@ import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
 import com.lframework.xingyun.basedata.enums.ColumnType;
 import com.lframework.xingyun.basedata.enums.ProductCategoryNodeType;
 import com.lframework.xingyun.basedata.enums.ProductType;
+import com.lframework.xingyun.basedata.events.DeleteProductEvent;
 import com.lframework.xingyun.basedata.mappers.ProductMapper;
 import com.lframework.xingyun.basedata.service.product.ProductBundleService;
 import com.lframework.xingyun.basedata.service.product.ProductPropertyItemService;
@@ -46,13 +51,9 @@ import com.lframework.xingyun.basedata.vo.product.retail.CreateProductRetailVo;
 import com.lframework.xingyun.basedata.vo.product.retail.UpdateProductRetailVo;
 import com.lframework.xingyun.basedata.vo.product.sale.CreateProductSaleVo;
 import com.lframework.xingyun.basedata.vo.product.sale.UpdateProductSaleVo;
-import com.lframework.starter.web.core.annotations.oplog.OpLog;
-import com.lframework.starter.web.inner.service.RecursionMappingService;
-import com.lframework.starter.web.core.utils.OpLogUtil;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,32 +146,18 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
     return getBaseMapper().getIdByCategoryId(categoryId);
   }
 
-  @OpLog(type = BaseDataOpLogType.class, name = "停用商品，ID：{}", params = "#ids", loopFormat = true)
+  @OpLog(type = BaseDataOpLogType.class, name = "删除商品，ID：{}", params = "#id")
   @Transactional(rollbackFor = Exception.class)
   @Override
-  public void batchUnable(Collection<String> ids) {
-
-    if (CollectionUtil.isEmpty(ids)) {
-      return;
-    }
+  public void deleteById(String id) {
 
     Wrapper<Product> updateWrapper = Wrappers.lambdaUpdate(Product.class)
-        .set(Product::getAvailable, Boolean.FALSE).in(Product::getId, ids);
+        .set(Product::getAvailable, Boolean.FALSE).eq(Product::getId, id);
     getBaseMapper().update(updateWrapper);
-  }
 
-  @OpLog(type = BaseDataOpLogType.class, name = "启用商品，ID：{}", params = "#ids", loopFormat = true)
-  @Transactional(rollbackFor = Exception.class)
-  @Override
-  public void batchEnable(Collection<String> ids) {
+    Product product = this.findById(id);
 
-    if (CollectionUtil.isEmpty(ids)) {
-      return;
-    }
-
-    Wrapper<Product> updateWrapper = Wrappers.lambdaUpdate(Product.class)
-        .set(Product::getAvailable, Boolean.TRUE).in(Product::getId, ids);
-    getBaseMapper().update(updateWrapper);
+    DataChangeEventBuilder.publishLogicDelete(this, DeleteProductEvent.class, product);
   }
 
   @OpLog(type = BaseDataOpLogType.class, name = "新增商品，ID：{}, 编号：{}", params = {"#_result",
@@ -180,13 +167,14 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
   public String create(CreateProductVo vo) {
 
     Wrapper<Product> checkWrapper = Wrappers.lambdaQuery(Product.class)
-        .eq(Product::getCode, vo.getCode());
+        .eq(Product::getCode, vo.getCode()).eq(Product::getAvailable, Boolean.TRUE);
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
 
     if (StringUtil.isNotBlank(vo.getSkuCode())) {
-      checkWrapper = Wrappers.lambdaQuery(Product.class).eq(Product::getSkuCode, vo.getSkuCode());
+      checkWrapper = Wrappers.lambdaQuery(Product.class).eq(Product::getSkuCode, vo.getSkuCode())
+          .eq(Product::getAvailable, Boolean.TRUE);
       if (getBaseMapper().selectCount(checkWrapper) > 0) {
         throw new DefaultClientException("商品SKU编号重复，请重新输入！");
       }
@@ -362,7 +350,8 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
     return data.getId();
   }
 
-  @OpLog(type = BaseDataOpLogType.class, name = "修改商品，ID：{}, 编号：{}", params = {"#id", "#code"})
+  @OpLog(type = BaseDataOpLogType.class, name = "修改商品，ID：{}, 编号：{}", params = {"#id",
+      "#code"})
   @Transactional(rollbackFor = Exception.class)
   @Override
   public void update(UpdateProductVo vo) {
@@ -373,13 +362,15 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
     }
 
     Wrapper<Product> checkWrapper = Wrappers.lambdaQuery(Product.class)
-        .eq(Product::getCode, vo.getCode()).ne(Product::getId, vo.getId());
+        .eq(Product::getCode, vo.getCode()).eq(Product::getAvailable, Boolean.TRUE)
+        .ne(Product::getId, vo.getId());
     if (getBaseMapper().selectCount(checkWrapper) > 0) {
       throw new DefaultClientException("编号重复，请重新输入！");
     }
 
     if (StringUtil.isNotBlank(vo.getSkuCode())) {
-      checkWrapper = Wrappers.lambdaQuery(Product.class).eq(Product::getSkuCode, vo.getSkuCode())
+      checkWrapper = Wrappers.lambdaQuery(Product.class).eq(Product::getAvailable, Boolean.TRUE)
+          .eq(Product::getSkuCode, vo.getSkuCode())
           .ne(Product::getId, vo.getId());
       if (getBaseMapper().selectCount(checkWrapper) > 0) {
         throw new DefaultClientException("商品SKU编号重复，请重新输入！");
@@ -388,7 +379,7 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
 
     LambdaUpdateWrapper<Product> updateWrapper = Wrappers.lambdaUpdate(Product.class)
         .set(Product::getCode, vo.getCode()).set(Product::getName, vo.getName())
-        .set(Product::getAvailable, vo.getAvailable()).set(Product::getSkuCode, vo.getSkuCode())
+        .set(Product::getSkuCode, vo.getSkuCode())
         .set(Product::getExternalCode,
             StringUtil.isBlank(vo.getExternalCode()) ? null : vo.getExternalCode())
         .set(Product::getSpec, StringUtil.isBlank(vo.getSpec()) ? null : vo.getSpec())
@@ -399,7 +390,8 @@ public class ProductServiceImpl extends BaseMpServiceImpl<ProductMapper, Product
             StringUtil.isBlank(vo.getCategoryId()) ? null : vo.getCategoryId())
         .set(Product::getBrandId, StringUtil.isBlank(vo.getBrandId()) ? null : vo.getBrandId())
         .set(Product::getTaxRate, vo.getTaxRate() == null ? BigDecimal.ZERO : vo.getTaxRate())
-        .set(Product::getSaleTaxRate, vo.getSaleTaxRate() == null ? BigDecimal.ZERO : vo.getSaleTaxRate())
+        .set(Product::getSaleTaxRate,
+            vo.getSaleTaxRate() == null ? BigDecimal.ZERO : vo.getSaleTaxRate())
         .set(Product::getWeight, vo.getWeight())
         .set(Product::getVolume, vo.getVolume())
         .eq(Product::getId, vo.getId());

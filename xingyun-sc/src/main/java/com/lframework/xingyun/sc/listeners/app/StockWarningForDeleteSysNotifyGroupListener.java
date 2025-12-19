@@ -21,10 +21,11 @@ public class StockWarningForDeleteSysNotifyGroupListener implements
   public void onApplicationEvent(DeleteSysNotifyGroupEvent event) {
     Wrapper<ProductStockWarningNotify> queryWrapper = Wrappers.lambdaQuery(
             ProductStockWarningNotify.class)
-        .eq(ProductStockWarningNotify::getNotifyGroupId, event.getId());
+        .eq(ProductStockWarningNotify::getNotifyGroupId, event.getEntity().getId());
     if (productStockWarningNotifyService.count(queryWrapper) > 0) {
       throw new DefaultClientException(
-          "消息通知组：" + event.getName() + "已被应用在库存预警，请先取消设置再删除该消息通知组！");
+          "消息通知组：" + event.getEntity().getName()
+              + "已被应用在库存预警，请先取消设置再删除该消息通知组！");
     }
   }
 }

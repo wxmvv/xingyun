@@ -68,12 +68,6 @@ public class QueryProductBo extends BaseBo<Product> {
   private Integer productType;
 
   /**
-   * 状态
-   */
-  @ApiModelProperty("状态")
-  private Boolean available;
-
-  /**
    * 创建时间
    */
   @ApiModelProperty("创建时间")

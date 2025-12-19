@@ -9,23 +9,25 @@ import com.lframework.starter.common.exceptions.impl.DefaultClientException;
 import com.lframework.starter.common.utils.Assert;
 import com.lframework.starter.common.utils.ObjectUtil;
 import com.lframework.starter.common.utils.StringUtil;
-import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.annotations.oplog.OpLog;
 import com.lframework.starter.web.core.components.resp.PageResult;
+import com.lframework.starter.web.core.event.DataChangeEventBuilder;
+import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
 import com.lframework.starter.web.core.utils.EnumUtil;
 import com.lframework.starter.web.core.utils.IdUtil;
+import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.core.utils.PageHelperUtil;
 import com.lframework.starter.web.core.utils.PageResultUtil;
+import com.lframework.starter.web.inner.enums.system.Gender;
 import com.lframework.xingyun.basedata.entity.Member;
 import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
+import com.lframework.xingyun.basedata.events.DeleteMemberEvent;
 import com.lframework.xingyun.basedata.mappers.MemberMapper;
 import com.lframework.xingyun.basedata.service.member.MemberService;
 import com.lframework.xingyun.basedata.vo.member.CreateMemberVo;
 import com.lframework.xingyun.basedata.vo.member.QueryMemberSelectorVo;
 import com.lframework.xingyun.basedata.vo.member.QueryMemberVo;
 import com.lframework.xingyun.basedata.vo.member.UpdateMemberVo;
-import com.lframework.starter.web.core.annotations.oplog.OpLog;
-import com.lframework.starter.web.inner.enums.system.Gender;
-import com.lframework.starter.web.core.utils.OpLogUtil;
 import java.io.Serializable;
 import java.util.List;
 import org.springframework.cache.annotation.CacheEvict;
@@ -71,6 +73,10 @@ public class MemberServiceImpl extends BaseMpServiceImpl<MemberMapper, Member> i
         .set(Member::getAvailable, Boolean.FALSE)
         .eq(Member::getId, id);
     getBaseMapper().update(updateWrapper);
+
+    Member record = this.findById(id);
+
+    DataChangeEventBuilder.publishLogicDelete(this, DeleteMemberEvent.class, record);
   }
 
   @OpLog(type = BaseDataOpLogType.class, name = "新增会员，ID：{}, 编号：{}", params = {"#id",

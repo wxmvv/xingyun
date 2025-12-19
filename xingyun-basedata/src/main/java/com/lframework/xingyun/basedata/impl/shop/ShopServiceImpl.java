@@ -10,14 +10,16 @@ import com.lframework.starter.common.utils.Assert;
 import com.lframework.starter.common.utils.ObjectUtil;
 import com.lframework.starter.common.utils.StringUtil;
 import com.lframework.starter.web.core.annotations.oplog.OpLog;
-import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
-import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
 import com.lframework.starter.web.core.components.resp.PageResult;
+import com.lframework.starter.web.core.event.DataChangeEventBuilder;
+import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.core.utils.PageHelperUtil;
 import com.lframework.starter.web.core.utils.PageResultUtil;
-import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.xingyun.basedata.entity.Shop;
+import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
+import com.lframework.xingyun.basedata.events.DeleteShopEvent;
 import com.lframework.xingyun.basedata.mappers.ShopMapper;
 import com.lframework.xingyun.basedata.service.shop.ShopService;
 import com.lframework.xingyun.basedata.vo.shop.CreateShopVo;
@@ -67,6 +69,10 @@ public class ShopServiceImpl extends BaseMpServiceImpl<ShopMapper, Shop> impleme
         .set(Shop::getAvailable, Boolean.FALSE)
         .eq(Shop::getId, id);
     getBaseMapper().update(updateWrapper);
+
+    Shop record = this.findById(id);
+
+    DataChangeEventBuilder.publishLogicDelete(this, DeleteShopEvent.class, record);
   }
 
   @OpLog(type = BaseDataOpLogType.class, name = "新增门店，ID：{}", params = {"#id"})

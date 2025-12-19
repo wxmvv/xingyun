@@ -9,26 +9,29 @@ import com.lframework.starter.common.exceptions.impl.DefaultClientException;
 import com.lframework.starter.common.utils.Assert;
 import com.lframework.starter.common.utils.ObjectUtil;
 import com.lframework.starter.common.utils.StringUtil;
-import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.annotations.oplog.OpLog;
 import com.lframework.starter.web.core.components.resp.PageResult;
+import com.lframework.starter.web.core.event.DataChangeEventBuilder;
+import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.utils.ApplicationUtil;
 import com.lframework.starter.web.core.utils.EnumUtil;
 import com.lframework.starter.web.core.utils.IdUtil;
+import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.core.utils.PageHelperUtil;
 import com.lframework.starter.web.core.utils.PageResultUtil;
+import com.lframework.starter.web.inner.dto.dic.city.DicCityDto;
+import com.lframework.starter.web.inner.service.DicCityService;
 import com.lframework.xingyun.basedata.entity.Supplier;
 import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
 import com.lframework.xingyun.basedata.enums.ManageType;
 import com.lframework.xingyun.basedata.enums.SettleType;
+import com.lframework.xingyun.basedata.events.DeleteSupplierEvent;
 import com.lframework.xingyun.basedata.mappers.SupplierMapper;
 import com.lframework.xingyun.basedata.service.supplier.SupplierService;
 import com.lframework.xingyun.basedata.vo.supplier.CreateSupplierVo;
 import com.lframework.xingyun.basedata.vo.supplier.QuerySupplierSelectorVo;
 import com.lframework.xingyun.basedata.vo.supplier.QuerySupplierVo;
 import com.lframework.xingyun.basedata.vo.supplier.UpdateSupplierVo;
-import com.lframework.starter.web.core.annotations.oplog.OpLog;
-import com.lframework.starter.web.inner.dto.dic.city.DicCityDto;
-import com.lframework.starter.web.inner.service.DicCityService;
-import com.lframework.starter.web.core.utils.OpLogUtil;
 import java.io.Serializable;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +81,10 @@ public class SupplierServiceImpl extends BaseMpServiceImpl<SupplierMapper, Suppl
         .set(Supplier::getAvailable, Boolean.FALSE)
         .eq(Supplier::getId, id);
     getBaseMapper().update(updateWrapper);
+
+    Supplier record = this.findById(id);
+
+    DataChangeEventBuilder.publishLogicDelete(this, DeleteSupplierEvent.class, record);
   }
 
   @OpLog(type = BaseDataOpLogType.class, name = "新增供应商，ID：{}, 编号：{}", params = {"#id",

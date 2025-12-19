@@ -30,7 +30,6 @@
           AND tb.is_default = #{vo.isDefault}
         </if>
       </if>
-      AND tb.available = TRUE
     </where>
     ORDER BY tb.create_time DESC
   </select>
@@ -60,7 +59,6 @@
           AND tb.is_default = #{vo.isDefault}
         </if>
       </if>
-      AND tb.available = TRUE
     </where>
     ORDER BY tb.create_time DESC
   </select>

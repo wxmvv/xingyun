@@ -9,25 +9,27 @@ import com.lframework.starter.common.exceptions.impl.DefaultClientException;
 import com.lframework.starter.common.utils.Assert;
 import com.lframework.starter.common.utils.ObjectUtil;
 import com.lframework.starter.common.utils.StringUtil;
-import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
+import com.lframework.starter.web.core.annotations.oplog.OpLog;
 import com.lframework.starter.web.core.components.resp.PageResult;
+import com.lframework.starter.web.core.event.DataChangeEventBuilder;
+import com.lframework.starter.web.core.impl.BaseMpServiceImpl;
 import com.lframework.starter.web.core.utils.EnumUtil;
 import com.lframework.starter.web.core.utils.IdUtil;
+import com.lframework.starter.web.core.utils.OpLogUtil;
 import com.lframework.starter.web.core.utils.PageHelperUtil;
 import com.lframework.starter.web.core.utils.PageResultUtil;
+import com.lframework.starter.web.inner.dto.dic.city.DicCityDto;
+import com.lframework.starter.web.inner.service.DicCityService;
 import com.lframework.xingyun.basedata.entity.Customer;
 import com.lframework.xingyun.basedata.enums.BaseDataOpLogType;
 import com.lframework.xingyun.basedata.enums.SettleType;
+import com.lframework.xingyun.basedata.events.DeleteCustomerEvent;
 import com.lframework.xingyun.basedata.mappers.CustomerMapper;
 import com.lframework.xingyun.basedata.service.customer.CustomerService;
 import com.lframework.xingyun.basedata.vo.customer.CreateCustomerVo;
 import com.lframework.xingyun.basedata.vo.customer.QueryCustomerSelectorVo;
 import com.lframework.xingyun.basedata.vo.customer.QueryCustomerVo;
 import com.lframework.xingyun.basedata.vo.customer.UpdateCustomerVo;
-import com.lframework.starter.web.core.annotations.oplog.OpLog;
-import com.lframework.starter.web.inner.dto.dic.city.DicCityDto;
-import com.lframework.starter.web.inner.service.DicCityService;
-import com.lframework.starter.web.core.utils.OpLogUtil;
 import java.io.Serializable;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +93,10 @@ public class CustomerServiceImpl extends BaseMpServiceImpl<CustomerMapper, Custo
         .set(Customer::getAvailable, Boolean.FALSE)
         .eq(Customer::getId, id);
     getBaseMapper().update(updateWrapper);
+
+    Customer record = this.findById(id);
+
+    DataChangeEventBuilder.publishLogicDelete(this, DeleteCustomerEvent.class, record);
   }
 
   @OpLog(type = BaseDataOpLogType.class, name = "新增客户，ID：{}, 编号：{}", params = {"#id",

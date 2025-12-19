@@ -152,11 +152,4 @@ public class UpdateProductVo implements BaseVo, Serializable {
    */
   @ApiModelProperty("零售价")
   private BigDecimal retailPrice;
-
-  /**
-   * 状态
-   */
-  @ApiModelProperty(value = "状态",required = true)
-  @NotNull(message = "状态不能为空！")
-  private Boolean available;
 }

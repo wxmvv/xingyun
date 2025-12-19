@@ -88,12 +88,6 @@ public class ProductSelectorBo extends BaseBo<Product> {
   @EnumConvert
   private Integer productType;
 
-  /**
-   * 状态
-   */
-  @ApiModelProperty("状态")
-  private Boolean available;
-
   public ProductSelectorBo() {
 
   }

@@ -9,8 +9,8 @@ import com.lframework.starter.common.exceptions.impl.DefaultClientException;
 import com.lframework.starter.common.utils.NumberUtil;
 import com.lframework.starter.common.utils.RegUtil;
 import com.lframework.starter.common.utils.StringUtil;
-import com.lframework.starter.web.core.utils.ApplicationUtil;
 import com.lframework.starter.web.core.components.excel.ExcelImportListener;
+import com.lframework.starter.web.core.utils.ApplicationUtil;
 import com.lframework.starter.web.core.utils.IdUtil;
 import com.lframework.xingyun.basedata.entity.Product;
 import com.lframework.xingyun.basedata.entity.ProductBrand;
@@ -48,11 +48,12 @@ public class ProductImportListener extends ExcelImportListener<ProductImportMode
     }
     if (checkList.contains(data.getCode())) {
       throw new DefaultClientException(
-          "第" + context.readRowHolder().getRowIndex() + "行“编号”与第" + (checkList.indexOf(data.getCode()) + 1) + "行重复");
+          "第" + context.readRowHolder().getRowIndex() + "行“编号”与第" + (
+              checkList.indexOf(data.getCode()) + 1) + "行重复");
     }
     checkList.add(data.getCode());
     Wrapper<Product> checkWrapper = Wrappers.lambdaQuery(Product.class)
-        .eq(Product::getCode, data.getCode());
+        .eq(Product::getCode, data.getCode()).eq(Product::getAvailable, Boolean.TRUE);
     ProductService productService = ApplicationUtil.getBean(ProductService.class);
     if (productService.count(checkWrapper) > 0) {
       throw new DefaultClientException(
@@ -69,7 +70,7 @@ public class ProductImportListener extends ExcelImportListener<ProductImportMode
 
     if (!StringUtil.isBlank(data.getSkuCode())) {
       LambdaQueryWrapper<Product> checkSkuCodeWrapper = Wrappers.lambdaQuery(Product.class)
-          .eq(Product::getSkuCode, data.getSkuCode());
+          .eq(Product::getSkuCode, data.getSkuCode()).eq(Product::getAvailable, Boolean.TRUE);
       if (productService.count(checkSkuCodeWrapper) > 0) {
         throw new DefaultClientException(
             "第" + context.readRowHolder().getRowIndex() + "行“SKU编号”重复，请检查");
@@ -84,7 +85,8 @@ public class ProductImportListener extends ExcelImportListener<ProductImportMode
     ProductCategoryService productCategoryService = ApplicationUtil.getBean(
         ProductCategoryService.class);
     Wrapper<ProductCategory> queryProductCategoryWrapper = Wrappers.lambdaQuery(
-        ProductCategory.class).eq(ProductCategory::getCode, data.getCategoryCode());
+            ProductCategory.class).eq(ProductCategory::getCode, data.getCategoryCode())
+        .eq(ProductCategory::getAvailable, Boolean.TRUE);
     ProductCategory productCategory = productCategoryService.getOne(queryProductCategoryWrapper);
     if (productCategory == null) {
       throw new DefaultClientException(
@@ -97,7 +99,8 @@ public class ProductImportListener extends ExcelImportListener<ProductImportMode
       ProductBrandService productBrandService = ApplicationUtil.getBean(
           ProductBrandService.class);
       Wrapper<ProductBrand> queryProductBrandWrapper = Wrappers.lambdaQuery(
-          ProductBrand.class).eq(ProductBrand::getCode, data.getBrandCode());
+              ProductBrand.class).eq(ProductBrand::getCode, data.getBrandCode())
+          .eq(ProductBrand::getAvailable, Boolean.TRUE);
       ProductBrand productBrand = productBrandService.getOne(queryProductBrandWrapper);
       if (productBrand == null) {
         throw new DefaultClientException(
@@ -184,7 +187,7 @@ public class ProductImportListener extends ExcelImportListener<ProductImportMode
 
       if (StringUtil.isNotBlank(data.getSkuCode())) {
         Wrapper<Product> checkSkuCodeWrapper = Wrappers.lambdaQuery(Product.class)
-            .eq(Product::getSkuCode, data.getSkuCode());
+            .eq(Product::getSkuCode, data.getSkuCode()).eq(Product::getAvailable, Boolean.TRUE);
         if (productService.count(checkSkuCodeWrapper) > 0) {
           throw new DefaultClientException("第" + (i + 1) + "行“商品SKU编号”重复，请重新输入");
         }
@@ -206,7 +209,8 @@ public class ProductImportListener extends ExcelImportListener<ProductImportMode
       record.setCategoryId(data.getCategoryId());
       record.setBrandId(data.getBrandId());
       record.setTaxRate(data.getTaxRate() == null ? BigDecimal.ZERO : data.getTaxRate());
-      record.setSaleTaxRate(data.getSaleTaxRate() == null ? BigDecimal.ZERO : data.getSaleTaxRate());
+      record.setSaleTaxRate(
+          data.getSaleTaxRate() == null ? BigDecimal.ZERO : data.getSaleTaxRate());
       record.setSpec(data.getSpec());
       record.setUnit(data.getUnit());
       record.setProductType(ProductType.NORMAL);

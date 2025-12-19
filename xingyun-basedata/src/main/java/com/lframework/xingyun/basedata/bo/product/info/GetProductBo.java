@@ -161,12 +161,6 @@ public class GetProductBo extends BaseBo<Product> {
   private BigDecimal retailPrice;
 
   /**
-   * 状态
-   */
-  @ApiModelProperty("状态")
-  private Boolean available;
-
-  /**
    * 属性
    */
   @ApiModelProperty("属性")
