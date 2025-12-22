@@ -95,4 +95,40 @@ DROP INDEX `code`,
 ADD INDEX `code`(`code`) USING BTREE;
 INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('4000001004', '4000001004', '', '删除收入项目', NULL, 0, '', NULL, '4000001', '11', '', 0, 2, 0, 'settle:in-item:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 10:53:45', '系统管理员', '1', '2021-07-04 00:34:23');
 INSERT INTO `sys_menu` (`id`, `code`, `name`, `title`, `icon`, `component_type`, `component`, `request_param`, `parent_id`, `sys_module_id`, `path`, `no_cache`, `display`, `hidden`, `permission`, `is_special`, `available`, `description`, `create_by`, `create_by_id`, `create_time`, `update_by`, `update_by_id`, `update_time`) VALUES ('4000002004', '4000002004', '', '删除支出项目', NULL, 0, '', NULL, '4000002', '11', '', 0, 2, 0, 'settle:out-item:delete', 1, 1, '', '系统管理员', '1', '2021-05-12 10:53:45', '系统管理员', '1', '2021-07-04 00:34:23');
+UPDATE `sys_menu` SET `parent_id` = '1001' WHERE `id` = '9000';
+UPDATE `sys_menu` SET `icon` = NULL WHERE `id` = '9000';
+UPDATE `sys_menu` SET `parent_id` = '1001' WHERE `id` = '1000001';
 
+UPDATE `sys_menu` SET `sys_module_id` = '1' WHERE `id` IN (
+    '1000001',
+    '1000001001',
+    '1000001002',
+    '1000001003',
+    '9000',
+    '9000001',
+    '9000002',
+    '9000003',
+    '9000004',
+    '9000005',
+    '9000008'
+);
+
+UPDATE `sys_menu` SET `sys_module_id` = '12' WHERE `id` IN (
+    '9000',
+    '9000001',
+    '9000002',
+    '9000003',
+    '9000004',
+    '9000005',
+    '9000008'
+);
+
+UPDATE `sys_menu` SET `parent_id` = '1001' WHERE `id` = '1000007';
+UPDATE `sys_menu` SET `parent_id` = '1001' WHERE `id` = '1000010';
+DELETE FROM `sys_menu` WHERE `id` IN (
+    '9000002',
+    '9000003',
+    '9000004',
+    '9000005',
+    '9000008'
+);
