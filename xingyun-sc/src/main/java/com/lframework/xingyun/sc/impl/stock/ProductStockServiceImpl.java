@@ -183,7 +183,7 @@ public class ProductStockServiceImpl extends BaseMpServiceImpl<ProductStockMappe
 
     vo.setTaxAmount(NumberUtil.getNumber(vo.getTaxAmount(), 2));
     int count = getBaseMapper().addStock(vo.getProductId(), vo.getScId(), vo.getStockNum(),
-        NumberUtil.mul(vo.getTaxAmount(), vo.getStockNum()), productStock.getStockNum(),
+            vo.getTaxAmount(), productStock.getStockNum(),
         productStock.getTaxAmount(), reCalcCostPrice);
     if (count != 1) {
       throw new DefaultClientException(
